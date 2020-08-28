@@ -4,39 +4,59 @@ let store = Immutable.Map({
   rovers: ['Curiosity', 'Opportunity', 'Spirit']
 });
 
-console.log(store);
+let updatedStore = store
+
+// console.log(store);
 
 // add our markup to the page
 const root = document.getElementById('root');
 
-const updateStore = (store, storeKey, storeKeyValue, previousStoreKeyValue) => {
-  console.log(previousStoreKeyValue, storeKeyValue);
-  console.log('selectedRover', store.get('selectedRover'));
+const updateStore = async (
+  storeKey,
+  storeKeyValue
+) => {
+  console.log(1, 'To update in state', storeKeyValue);
+  console.log(2, 'Previous state', updatedStore.get('selectedRover'));
   // store = Object.assign(store, newState);
-  if (previousStoreKeyValue !== storeKeyValue) {
+
+  const selectedRover = updatedStore.get('selectedRover');
+
+  // let data = store.get('data');
+  // console.log('data', data);
+
+  // let updatedStore = store
+
+  if (selectedRover != storeKeyValue) {
     console.log('yes');
-    getRoverImages(storeKeyValue);
-  }
-  const updatedStore = store.set(storeKey, storeKeyValue);
+    data = await getRoverImages(storeKeyValue);
+    updatedStore = store.set('data', data.data).set(storeKey, storeKeyValue);
+  } 
+
   render(root, updatedStore);
 };
 
 const render = async (root, state) => {
-  const lastCalledRover = state.get('selectedRover');
+  console.log('Render');
+  console.log(state)
+  const selectedRover = state.get('selectedRover');
+  console.log(
+    `
+    Selected rover ${selectedRover}
+    `
+  )
   root.innerHTML = App(state);
-  console.log('render');
-  addClickListeners(lastCalledRover);
+  addClickListeners();
 };
 
 // This also is a side effect
-const addClickListeners = lastCalledRover => {
+const addClickListeners = () => {
   let buttons = document.querySelectorAll('.button');
   for (const button of buttons) {
     const text = button.innerHTML;
     button.addEventListener(
       'click',
       function() {
-        updateStore(store, 'selectedRover', text, lastCalledRover);
+        updateStore('selectedRover', text);
       },
       false
     );
@@ -80,6 +100,18 @@ const App = state => {
                     but generally help with discoverability of relevant imagery.
                 </p>
             </section>
+            <section>
+            Aca deberia hacer un render de lo que tengo en data
+            ${Images(state.get('data'))}
+              <div class="container">
+                <div class="row row-cols-3">
+                  <div class="col">Column</div>
+                  <div class="col">Column</div>
+                  <div class="col">Column</div>
+                  <div class="col">Column</div>
+                </div>
+              </div>
+            </section>
         </main>
         <footer></footer>
     `;
@@ -96,22 +128,27 @@ window.addEventListener('load', () => {
 const Greeting = rover => {
   if (rover) {
     return `
-            <h1>Welcome, ${rover}!</h1>
+            <h1>Welcome to ${rover}!</h1>
         `;
   }
 
   return `
-        <h1>Hello!</h1>
+        <h1>Welcome!</h1>
     `;
 };
 
 const Menu = rovers => {
-  console.log(rovers);
+  // console.log(rovers);
   let menu = '';
   rovers.map(eachRover => {
     return (menu += `<a class="nav-item nav-link button button--${eachRover}">${eachRover}</a>`);
   });
   return menu;
+};
+
+const Images = data => {
+  console.log('data', data);
+  //data.map(el => console.log(el))
 };
 
 // const Rover = selectedRover => {
@@ -154,8 +191,9 @@ const getRoverImages = selectedRover => {
   //let { selectedRover } = state;
 
   //fetch(`http://localhost:3000/selectedRover`)
-  fetch(`http://localhost:3000/rovers?rover=${selectedRover}`)
-    .then(res => res.json())
-    .then(data => console.log('data', data));
+  return fetch(
+    `http://localhost:3000/rovers?rover=${selectedRover}`
+  ).then(res => res.json());
+  //.then(data => console.log('data', data));
   //.then(selectedRover => updateStore(store, { selectedRover }))
 };
