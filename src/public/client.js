@@ -1,25 +1,28 @@
+const server = `http://localhost:3000`
+
 let store = Immutable.Map({
   selectedRover: '',
   data: [],
+  manifests: [],
   rovers: ['Curiosity', 'Opportunity', 'Spirit']
 });
 
-let updatedStore = store
+let updatedStore = store;
+
 
 // console.log(store);
 
 // add our markup to the page
 const root = document.getElementById('root');
 
-const updateStore = async (
-  storeKey,
-  storeKeyValue
-) => {
+const updateStore = async (storeKey, storeKeyValue) => {
   console.log(1, 'To update in state', storeKeyValue);
   console.log(2, 'Previous state', updatedStore.get('selectedRover'));
+
   // store = Object.assign(store, newState);
 
   const selectedRover = updatedStore.get('selectedRover');
+  const manifests = updatedStore.get('manifests');
 
   // let data = store.get('data');
   // console.log('data', data);
@@ -30,20 +33,21 @@ const updateStore = async (
     console.log('yes');
     data = await getRoverImages(storeKeyValue);
     updatedStore = store.set('data', data.data).set(storeKey, storeKeyValue);
-  } 
+  }
 
   render(root, updatedStore);
 };
 
 const render = async (root, state) => {
+
   console.log('Render');
-  console.log(state)
+  console.log(state);
   const selectedRover = state.get('selectedRover');
   console.log(
     `
     Selected rover ${selectedRover}
     `
-  )
+  );
   root.innerHTML = App(state);
   addClickListeners();
 };
@@ -55,7 +59,7 @@ const addClickListeners = () => {
     const text = button.innerHTML;
     button.addEventListener(
       'click',
-      function() {
+      function () {
         updateStore('selectedRover', text);
       },
       false
@@ -65,13 +69,7 @@ const addClickListeners = () => {
 
 // create content
 const App = state => {
-  // let {
-  //   user,
-  //   selectedRover,
-  //   rovers
-  // } = state;
-
-  // console.log(state.get('selectedRover'))
+  console.log('App -> state', state.toJS());
 
   return `
         <header></header>
@@ -102,13 +100,9 @@ const App = state => {
             </section>
             <section>
             Aca deberia hacer un render de lo que tengo en data
-            ${Images(state.get('data'))}
               <div class="container">
                 <div class="row row-cols-3">
-                  <div class="col">Column</div>
-                  <div class="col">Column</div>
-                  <div class="col">Column</div>
-                  <div class="col">Column</div>
+                  ${Images(state.get('data'))}
                 </div>
               </div>
             </section>
@@ -126,6 +120,7 @@ window.addEventListener('load', () => {
 
 // Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
 const Greeting = rover => {
+  console.log('Greeting');
   if (rover) {
     return `
             <h1>Welcome to ${rover}!</h1>
@@ -138,62 +133,69 @@ const Greeting = rover => {
 };
 
 const Menu = rovers => {
-  // console.log(rovers);
+  console.log('Menu');
   let menu = '';
   rovers.map(eachRover => {
-    return (menu += `<a class="nav-item nav-link button button--${eachRover}">${eachRover}</a>`);
+    return menu += `<a class="nav-item nav-link button button--${eachRover}">${eachRover}</a>`;
   });
   return menu;
 };
 
-const Images = data => {
-  console.log('data', data);
+const Images = images => {
+  console.log('Images');
+  console.log(images);
+  let imagesGrid = '';
+  images.map(({
+    img_src,
+    camera
+  }) => {
+    return imagesGrid += `<div class="col">
+    <h3>${camera.name}</h3>
+      <img src="${img_src}" style="width: 100%"></div>`;
+  });
+  return imagesGrid;
+  // console.log('data', data);
   //data.map(el => console.log(el))
 };
 
-// const Rover = selectedRover => {
-//   getImageOfTheDay(store);
-//   return selectedRover;
-// };
+const getRoverImages = selectedRover => {
+  console.log('getRoverImages -> Fetching');
+  return fetch(
+    `${server}/rovers/${selectedRover}`
+  ).then(res => res.json());
+};
 
-// Example of a pure function that renders infomation requested from the backend
+const getAllRoversManifests = (roversList) => {
+  console.log('getAllRoversManifests -> Fetching')
+  return fetch(
+    `${server}/rovers/manifests?rovers=${roversList}`
+  ).then(res => res.json());
+}
+
+async function init(rovers) {
+    const data = await getAllRoversManifests(rovers)
+    updateStore('manifests', data.data);
+    console.log('manifests', data)
+}
+init(updatedStore.get('rovers'))
+
+
+
+
+// Example of a pure function that renders information requested from the backend
 // const ImageOfTheDay = (selectedRover) => {
 
-//     // If image does not already exist, or it is not from today -- request it again
-//     const today = new Date()
-//     const photodate = new Date(selectedRover.date)
-//     console.log(photodate.getDate(), today.getDate());
+// Note:
+/* I don't need to do the following since I am hitting the latest photos endpoint
+https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/latest_photos?api_key=${process.env.API_KEY}
+which retrieves the LATEST ones and ONLY photos
+*/
+// If image does not already exist, or it is not from today -- request it again
+// const today = new Date()
+// const photodate = new Date(selectedRover.date)
+// console.log(photodate.getDate(), today.getDate());
 
-//     console.log(photodate.getDate() === today.getDate());
-//     if (!selectedRover || selectedRover.date === today.getDate() ) {
-//         getImageOfTheDay(store)
-//     }
-
-//     // check if the photo of the day is actually type video!
-//     if (selectedRover.media_type === "video") {
-//         return (`
-//             <p>See today's featured video <a href="${selectedRover.url}">here</a></p>
-//             <p>${selectedRover.title}</p>
-//             <p>${selectedRover.explanation}</p>
-//         `)
-//     } else {
-//         return (`
-//             <img src="${selectedRover.image.url}" height="350px" width="100%" />
-//             <p>${selectedRover.image.explanation}</p>
-//         `)
-//     }
+// console.log(photodate.getDate() === today.getDate());
+// if (!selectedRover || selectedRover.date === today.getDate() ) {
+//     getImageOfTheDay(store)
 // }
-
-// ------------------------------------------------------  API CALLS
-
-// Example API call
-const getRoverImages = selectedRover => {
-  //let { selectedRover } = state;
-
-  //fetch(`http://localhost:3000/selectedRover`)
-  return fetch(
-    `http://localhost:3000/rovers?rover=${selectedRover}`
-  ).then(res => res.json());
-  //.then(data => console.log('data', data));
-  //.then(selectedRover => updateStore(store, { selectedRover }))
-};
