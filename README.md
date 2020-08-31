@@ -23,6 +23,8 @@ We have supplied some of the foundational code for you. So follow these steps to
 **If you don’t have yarn installed globally, follow their installation documentation here according to your operating system: https://yarnpkg.com/lang/en/docs/install
 
 2. Next you'll need a NASA developer API key in order to access the API endpoints. To do that, go here: https://api.nasa.gov/. If you want to simply look around at what api endpoints NASA offers, you can use their provided DEMO_KEY to do this.
+Create at the root level the file `.env` and add your key: `API_KEY=replace-this-with-your-API-key`
+(Be sure that in `.gitignore` you are excluding this file: `.env`; you don't want to commit your secrets)
 
 3. In your repo, you will see a .env-example file with a place for your API key. Rename or copy the file to one called `.env` and enter in your key. Now that you have your key, just remember to add it as a parameter to every request you make to NASA.
 
