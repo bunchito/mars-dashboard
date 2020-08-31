@@ -33,11 +33,6 @@ function stateUpdate(state, action) {
   }
 }
 
-const render = async (root, state) => {
-  root.innerHTML = App(state);
-  addClickListeners();
-};
-
 const addClickListeners = () => {
   let buttons = document.querySelectorAll('.button');
   for (const button of buttons) {
@@ -63,38 +58,43 @@ const addClickListeners = () => {
   }
 };
 
+const render = async (root, state) => {
+  root.innerHTML = App(state);
+  addClickListeners();
+};
+
 const App = state => {
   return `
-        <header>
-          <nav class="navbar navbar-expand-lg navbar-light">
-            <a class="navbar-brand" href="#">MENU</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-             <div class="navbar-nav">
-               ${Menu(state.get('rovers'))}
-             </div>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">MENU</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            ${Menu(state.get('rovers'))}
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main>
+        ${Greeting(state.get('selectedRover'))}
+        <section>
+          <p>
+            ${Info(state.get('selectedRover'))}
+          </p>
+        </section>
+        <section>
+          <div class="container">
+            <div class="row row-cols-3">
+              ${Images(state.get('data'))}
             </div>
-          </nav>
-        </header>
-        <main>
-            ${Greeting(state.get('selectedRover'))}
-            <section>
-              <p>
-                ${Info(state.get('selectedRover'))}
-              </p>
-            </section>
-            <section>
-              <div class="container">
-                <div class="row row-cols-3">
-                  ${Images(state.get('data'))}
-                </div>
-              </div>
-            </section>
-        </main>
-        <footer>Mars Dashboard @ 2020</footer>
-    `;
+          </div>
+        </section>
+    </main>
+    <footer></footer>
+  `;
 };
 
 // listening for load event because page should load before any JS is called
@@ -105,51 +105,54 @@ window.addEventListener('load', () => {
 // ------------------------------------------------------  COMPONENTS
 const Greeting = rover => {
   if (rover) {
-    return `
-            <h1>Welcome to ${rover}!</h1>
-        `;
+    return `<h1>Welcome to ${rover}!</h1>`;
   }
-
-  return `
-        <h1>Welcome!</h1>
-    `;
+  return `<h1>Welcome!</h1>`;
 };
+
+const MenuUI = (rover) => {
+  return `<a class="nav-item nav-link button button--${rover}">${rover}</a>`
+}
 
 const Menu = rovers => {
-  let menu = '';
-  rovers.map(eachRover => {
-    return (menu += `<a class="nav-item nav-link button button--${eachRover}">${eachRover}</a>`);
-  });
-  return menu;
+  return rovers.map(eachRover => {
+    return MenuUI(eachRover)
+  }).join('');
 };
+
+const InfoUI = (status, launch_date, landing_date, total_photos) => {
+  return `
+    <div>
+      <div>Status: ${status}</div>
+      <div>Launch date: ${launch_date}</div>
+      <div>Landing date: ${landing_date}</div>
+      <div>Total photos: ${total_photos}</div>
+    </div>  
+  `
+}
 
 const Info = rover => {
   if (rover) {
     const { status, launch_date, landing_date, total_photos } = store.get(
       'manifests'
     )[rover];
-    return `
-      <div>
-        <span>Status: ${status}</div>
-        <div>Launch date: ${launch_date}</div>
-        <div>Landing date: ${landing_date}</div>
-        <div>Total photos: ${total_photos}</div>
-      </div>
-    `;
+    return InfoUI(status, launch_date, landing_date, total_photos)
   }
-  return ``
+  return ``;
+};
+
+const ImageUI = (camera, date, src) => {
+  return `<div class="col-12 col-sm-3 m-x-0">
+  <h3>${camera}</h3>
+  <div>Date: ${date}</div>
+  <img src="${src}" style="width: 100%">
+</div>`;
 };
 
 const Images = images => {
-  let imagesGrid = '';
-  images.map(({ img_src, camera, earth_date }) => {
-    return (imagesGrid += `<div class="col m-x-0">
-       <h3>${camera.name}</h3>
-       <div>Date: ${earth_date}</div>
-       <img src="${img_src}" style="width: 100%">
-    </div>`);
-  });
-  return imagesGrid;
+  return images.map(({ img_src, camera, earth_date }) => {
+    return ImageUI(camera.name, earth_date, img_src);
+  }).join('');
 };
 
 const getRoverImages = selectedRover => {
