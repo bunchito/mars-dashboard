@@ -65,36 +65,36 @@ const render = async (root, state) => {
 
 const App = state => {
   return `
-    <header>
-      <nav class="navbar navbar-expand-lg navbar-light">
-        <a class="navbar-brand" href="#">MENU</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-          <div class="navbar-nav">
-            ${Menu(state.get('rovers'))}
-          </div>
-        </div>
-      </nav>
-    </header>
-    <main>
-        ${Greeting(state.get('selectedRover'))}
-        <section>
-          <p>
-            ${Info(state.get('selectedRover'))}
-          </p>
-        </section>
-        <section>
-          <div class="container">
-            <div class="row row-cols-3">
-              ${Images(state.get('data'))}
+        <header>
+          <nav class="navbar navbar-expand-lg navbar-light">
+            <a class="navbar-brand" href="#">MENU</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+             <div class="navbar-nav">
+               ${Menu(state.get('rovers'))}
+             </div>
             </div>
-          </div>
-        </section>
-    </main>
-    <footer></footer>
-  `;
+          </nav>
+        </header>
+        <main>
+            ${Greeting(state.get('selectedRover'))}
+            <section>
+              <p>
+                ${Info(state.get('selectedRover'))}
+              </p>
+            </section>
+            <section>
+              <div class="container">
+                <div class="row row-cols-3">
+                  ${Images(state.get('data'))}
+                </div>
+              </div>
+            </section>
+        </main>
+        <footer></footer>
+    `;
 };
 
 // listening for load event because page should load before any JS is called
@@ -102,7 +102,7 @@ window.addEventListener('load', () => {
   render(root, store);
 });
 
-// ------------------------------------------------------  COMPONENTS
+/** Components */
 const Greeting = rover => {
   if (rover) {
     return `<h1>Welcome to ${rover}!</h1>`;
@@ -165,7 +165,8 @@ const getAllRoversManifests = roversList => {
   );
 };
 
-// I wanted to fetch all the info at once instead of requesting when switching rovers as a different approach as fetching data for rovers
+/** I wanted to fetch all the info at once instead of requesting when switching 
+ * rovers as a different approach as fetching data for rovers */
 async function init(rovers) {
   const { data } = await getAllRoversManifests(rovers);
   store = store.set('manifests', data);
