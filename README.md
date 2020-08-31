@@ -58,15 +58,4 @@ To complete this project, your backend code must:
 - [ ] Use pure functions to do any logic necessary
 - [ ] Hide any sensetive information from public view (In other words, use your dotenv file)
 
-### Above and Beyond
-
-The NASA API has a lot more data to offer than what we are using here. There's no extra credit in this course, but it could be fun explore their API and see what they have to offer and what strikes your creativity to add into your project. You are not limited to the API calls we require. Look here (https://api.nasa.gov/ at the Browse API's section) to see all that's available.
-
-Some ideas might be to incorporate the Astronomy Photo of the Day into your design, collect weather information on Mars, etc...
-
-### Design
-
-Create an image gallery slider, put a full page background image, code some falling asteroids with css animations ... the visual design of this UI is up to you! There is a lot of awesome dashboard design inspiration out there. You have already been given a good start with a mobile-first stylesheet already set up for you. 
-
-
 

@@ -1,106 +1,87 @@
-require('dotenv').config()
-const express = require('express')
-const bodyParser = require('body-parser')
-const fetch = require('node-fetch')
-const path = require('path')
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
+const path = require('path');
 
-const app = express()
-const port = 3000
+const app = express();
+const port = 3000;
 
-const nasaAPI = `https://api.nasa.gov/mars-photos/api/v1`
+const nasaAPI = `https://api.nasa.gov/mars-photos/api/v1`;
 
-app.use(bodyParser.urlencoded({
-  extended: false
-}))
-app.use(bodyParser.json())
+app.use(
+  bodyParser.urlencoded({
+    extended: false
+  })
+);
+app.use(bodyParser.json());
 
-app.use('/', express.static(path.join(__dirname, '../public')))
+app.use('/', express.static(path.join(__dirname, '../public')));
 
-// your API calls
-
-// example API call
-app.get('/rovers/manifests', (req, res) => {
-  console.log(`Fetching from NASA > Manifest`)
-  const {
-    rovers
-  } = req.query
+app.get('/rovers/manifests', async (req, res) => {
+  const { rovers } = req.query;
 
   // Don't want to cast the previous string into an array directly
-  const roversArr = rovers.split(',')
-  console.log(roversArr)
-
+  const roversArr = rovers.split(',');
 
   try {
-    // let manifest = roversArr.map(async (eachRover) => {
-    //   console.log(eachRover)
-    //   let data = await fetch(`${nasaAPI}/manifests/${eachRover}?api_key=${process.env.API_KEY}`)
-    //   .then(response => response.json())
-    //   manifest.push({ data })
+    const promises = roversArr.map(eachRover => {
+      return fetch(
+        `${nasaAPI}/manifests/${eachRover}?api_key=${process.env.API_KEY}`
+      )
+        .then(response => response.json())
+        .catch(err => console.log(err));
+    });
 
-    let manifest = []
+    const manifests = await Promise.all(promises).then(results => {
+      return results;
+    });
 
-    // Promise.all(
-    //   roversArr.map(eachRover => {
-    //     return fetch(`${nasaAPI}/manifests/${eachRover}?api_key=${process.env.API_KEY}`)
-    //       .then(response => response.json())
-    //   })
-    // )
-    //   .then((manifests) => {
-    //     //console.log(values);
-    //     return manifests.map(eachManifest => {
-    //       console.log(manifest)
-    //       manifest.push(1)
-    //       const { name, landing_date } = eachManifest.photo_manifest
-    //       const newElement = {
-    //         name,
-    //         landing_date
-    //       }
-    //       console.log(name, landing_date)
-    //       return manifest
-    //     })
-    // });
-
-    // const promises = roversArr.map(eachRover => {
-    //   return fetch(`${nasaAPI}/manifests/${eachRover}?api_key=${process.env.API_KEY}`)
-    //   .then(response => response.json())
-    // })
-
-    // Promise.all(promises).then(results => {
-    //  console.log(results)
-    // });
+    const parsedManifests = manifests.reduce((acc, item) => {
+      const {
+        name,
+        landing_date,
+        launch_date,
+        status,
+        total_photos
+      } = item.photo_manifest;
+      acc[name] = {
+        landing_date,
+        launch_date,
+        status,
+        total_photos
+      };
+      return acc;
+    }, {});
 
     res.send({
-      data: [1,2]
-    })
-
-
+      data: parsedManifests
+    });
   } catch (err) {
     console.log('error:', err);
   }
-})
-
+});
 
 app.get('/rovers/:rover', async (req, res) => {
-  const {
-    rover
-  } = req.params
-  console.log(`Fetching from NASA > Rovers > ${rover}`)
+  const { rover } = req.params;
   try {
     // Since rubric says later, I will using `latest_photos`. I could do it more user friendly adding a parameter to handle this.
-    const data = await fetch(`${nasaAPI}/rovers/${rover}/latest_photos?api_key=${process.env.API_KEY}`)
-      .then(response => response.json())
+    const data = await fetch(
+      `${nasaAPI}/rovers/${rover}/latest_photos?api_key=${process.env.API_KEY}`
+    ).then(response => response.json());
 
     // I want my back-end to JUST retrieve 10 results from the original payload
-    //console.log(data)
-    const {
-      latest_photos
-    } = data
+    const { latest_photos } = data;
     res.send({
-      data: latest_photos.slice(0, 10)
-    })
+      data: latest_photos.slice(0, 9)
+    });
   } catch (err) {
     console.log('error:', err);
   }
-})
+});
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, listening);
+
+function listening () {
+  console.log(`Example app listening on port ${port}!`);
+}
