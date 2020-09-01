@@ -82,13 +82,13 @@ const App = state => {
             ${Greeting(state.get('selectedRover'))}
             <section>
               <p>
-                ${Info(state.get('selectedRover'))}
+                ${Info(state.get('selectedRover'), InfoUI)}
               </p>
             </section>
             <section>
               <div class="container">
                 <div class="row row-cols-3">
-                  ${Images(state.get('data'))}
+                  ${Images(state.get('data'), ImagesUI)}
                 </div>
               </div>
             </section>
@@ -103,6 +103,7 @@ window.addEventListener('load', () => {
 });
 
 /** Components */
+
 const Greeting = rover => {
   if (rover) {
     return `<h1>Welcome to ${rover}!</h1>`;
@@ -120,8 +121,10 @@ const Menu = rovers => {
   }).join('');
 };
 
-const InfoUI = (status, launch_date, landing_date, total_photos) => {
-  return `
+const InfoUI = rover => {
+  if (rover) {
+    const { status, launch_date, landing_date, total_photos } = store.get('manifests')[rover];
+    return `
     <div>
       <div>Status: ${status}</div>
       <div>Launch date: ${launch_date}</div>
@@ -129,30 +132,26 @@ const InfoUI = (status, launch_date, landing_date, total_photos) => {
       <div>Total photos: ${total_photos}</div>
     </div>  
   `
-}
-
-const Info = rover => {
-  if (rover) {
-    const { status, launch_date, landing_date, total_photos } = store.get(
-      'manifests'
-    )[rover];
-    return InfoUI(status, launch_date, landing_date, total_photos)
   }
   return ``;
+}
+
+const Info = (rover, callback) => {
+  return callback(rover)
 };
 
-const ImageUI = (camera, date, src) => {
-  return `<div class="col-12 col-sm-3 m-x-0">
-  <h3>${camera}</h3>
-  <div>Date: ${date}</div>
-  <img src="${src}" style="width: 100%">
-</div>`;
+const ImagesUI = images => {
+  return images.map(({ camera: { name }, earth_date, img_src }) => {
+    return `<div class="col-12 col-sm-3 m-x-0">
+      <h3>${name}</h3>
+      <div>Date: ${earth_date}</div>
+      <img src="${img_src}" style="width: 100%">
+    </div>`;
+}).join('');
 };
 
-const Images = images => {
-  return images.map(({ img_src, camera, earth_date }) => {
-    return ImageUI(camera.name, earth_date, img_src);
-  }).join('');
+const Images = (images, callback) => {
+  return callback(images)
 };
 
 const getRoverImages = selectedRover => {
