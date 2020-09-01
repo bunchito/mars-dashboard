@@ -111,19 +111,23 @@ const Greeting = rover => {
   return `<h1>Welcome!</h1>`;
 };
 
-const MenuUI = (rover) => {
-  return `<a class="nav-item nav-link button button--${rover}">${rover}</a>`
-}
+const MenuUI = rover => {
+  return `<a class="nav-item nav-link button button--${rover}">${rover}</a>`;
+};
 
 const Menu = rovers => {
-  return rovers.map(eachRover => {
-    return MenuUI(eachRover)
-  }).join('');
+  return rovers
+    .map(eachRover => {
+      return MenuUI(eachRover);
+    })
+    .join('');
 };
 
 const InfoUI = rover => {
   if (rover) {
-    const { status, launch_date, landing_date, total_photos } = store.get('manifests')[rover];
+    const { status, launch_date, landing_date, total_photos } = store.get(
+      'manifests'
+    )[rover];
     return `
     <div>
       <div>Status: ${status}</div>
@@ -131,40 +135,44 @@ const InfoUI = rover => {
       <div>Landing date: ${landing_date}</div>
       <div>Total photos: ${total_photos}</div>
     </div>  
-  `
+  `;
   }
   return ``;
-}
+};
 
 const Info = (rover, callback) => {
-  return callback(rover)
+  return callback(rover);
 };
 
 const ImagesUI = images => {
-  return images.map(({ camera: { name }, earth_date, img_src }) => {
-    return `<div class="col-12 col-sm-3 m-x-0">
+  return images
+    .map(({ camera: { name }, earth_date, img_src }) => {
+      return `<div class="col-12 col-sm-3 m-x-0">
       <h3>${name}</h3>
       <div>Date: ${earth_date}</div>
       <img src="${img_src}" style="width: 100%">
     </div>`;
-}).join('');
+    })
+    .join('');
 };
 
 const Images = (images, callback) => {
-  return callback(images)
+  return callback(images);
 };
 
 const getRoverImages = selectedRover => {
-  return fetch(`${server}/rovers/${selectedRover}`).then(res => res.json());
+  return fetch(`${server}/rovers/${selectedRover}`)
+    .then(res => res.json())
+    .catch(err => console.error(err));
 };
 
 const getAllRoversManifests = roversList => {
-  return fetch(`${server}/rovers/manifests?rovers=${roversList}`).then(res =>
-    res.json()
-  );
+  return fetch(`${server}/rovers/manifests?rovers=${roversList}`)
+    .then(res => res.json())
+    .catch(err => console.error(err));
 };
 
-/** I wanted to fetch all the info at once instead of requesting when switching 
+/** I wanted to fetch all the info at once instead of requesting when switching
  * rovers as a different approach as fetching data for rovers */
 async function init(rovers) {
   const { data } = await getAllRoversManifests(rovers);
